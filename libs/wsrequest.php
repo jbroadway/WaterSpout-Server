@@ -77,8 +77,33 @@ class WSRequest extends HTTPRequest
 		$handshake.= "Upgrade: WebSocket\r\n";
 		$handshake.= "Connection: Upgrade\r\n";
 		
+		// WebSocket handshake v8.
+		if ($this->headers->has('Sec-WebSocket-Key'))
+		{
+			$handshake.= 'Sec-WebSocket-Origin: ' . $this->headers->get('Origin') . "\r\n";
+
+			if (!empty($this->query))
+			{
+				$handshake.= 'Sec-WebSocket-Location: ' . $this->full_url() . '?' . $this->query . "\r\n";
+			}
+			else
+			{
+				$handshake.= 'Sec-WebSocket-Location: ' . $this->full_url() . "\r\n";
+			}
+
+			if ($this->headers->has('Sec-WebSocket-Protocol'))
+			{
+				$handshake.= 'Sec-WebSocket-Protocol: ' . $this->headers->get('Sec-WebSocket-Protocol') . "\r\n";
+			}
+			
+			$key = $this->headers->get('Sec-WebSocket-Key');
+			$guid = '258EAFA5-E914-47DA-95CA-C5AB0DC85B11';
+			$handshake.= 'Sec-WebSocket-Accept: ' . base64_encode (sha1 ($key . $guid, true)) . "\r\n";
+			
+			$handshake.= "\r\n";
+		}
 		// WebSocket handshake v76.
-		if ($this->headers->has('Sec-WebSocket-Key1') && $this->headers->has('Sec-WebSocket-Key2'))
+		elseif ($this->headers->has('Sec-WebSocket-Key1') && $this->headers->has('Sec-WebSocket-Key2'))
 		{
 			$handshake.= 'Sec-WebSocket-Origin: ' . $this->headers->get('Origin') . "\r\n";
 
